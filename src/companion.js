@@ -1,14 +1,16 @@
 /* global require */
 (function(module, undefined){
     "use strict";
-    var fs, vm, load;
+    var fs, vm, path, load;
 
     fs = require('fs');
     vm = require('vm');
+    path = require('path');
 
     load = function(filename, context, callback){
         var poly = typeof context === 'function';
 
+        filename = path.resolve(path.dirname(module.parent.filename), filename);
         callback = poly ? context : callback;
         context = poly ? {} : (context || {});
 
