@@ -1,6 +1,6 @@
 {
   "name": "companion",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "Stephen Young <steve@rockgolem.com>",
   "description": "Load vanilla javascript in node.",
   "contributors": [
