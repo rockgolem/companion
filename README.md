@@ -1,35 +1,48 @@
-# Javascript Project Boilerplate
-A template for Javascript projects intended to kick-start productivity.
+# Companion
+Companion lets you easily load javascript libraries into node that were not developed with node's [module](http://nodejs.org/api/modules.html) implementation.
 
-## Scaffolding
-Javascript Project Boilerplate provides a smart folder structure and some preconfigured files:
+## Installation
+```javascript
+npm install companion
+```
 
-### Folders
- * `/dist` - Contains compiled and minified versions of your sweet lib.
- * `/docs` - A readme.md file is fine for many projects, but if you have any extensive documentation, it goes here.
- * `/examples` - Self explanitory, really.
- * `/lib` - A place for your bundled third party libs and submodules.
- * `/src` - this is where your project code lives before it is compiled in the `dist` folder.
- * `/test` - No self-respecting open source project that is more complex than a gist should be distributed without unit tests.
+## Using companion
+Companion exposes a single method, `require`.  Use it just like the native `require` function.
+```javascript
+// libs/third-party.js
+var thirdParty = { awesomesauce : true };
+```
+```javascript
+// script.js
+var companion = require('companion');
+var context = companion.require('libs/third-party.js');
 
-### Files
- * `.gitignore` - npm_modules is already blacklisted.
- * `package.json` - Loads the devDependencies for Gruntjs, and contains placeholders for all of your important lib info.
- * `jshint.json` - Use this file to configre the jshint task.  Right now it is somewhat strict; leave it as-is if you want to write watertight javascript.
+console.log(context.thirdParty); // { awesomesauce : true }
+```
+### Synchronous or Asynchronous
+The above example shows how to use companion to load a file synchronously, just like the native `require` function.  If you'd rather load the file asynchronously, companion has a ayntax for that.
+```javascript
+companion.require('libs/third-party.js', function(err, data) {
+    if (!err) {
+        console.log(data.thirdParty); // { awesomesauce : true }
+    }
+});
+```
+### Passing a Context
+Sometimes you already have an object and you want the contents of the file merged into it.  Sometimes the library you are trying to load requires configuration data or another dependency to exist in the global scope.  Passing in a context will expose that object's properties as global variables in the file; then it will return an object containing those globals along with whatever the library exposes.
+```javascript
+var context = { foo : 42 };
 
-## Setup
-You'll need nodejs to take full advantage of this project.  Clone the repo, run `npm install`, then
-run `grunt` (you also need to run `npm install -g grunt-cli` if you have never done so before.) Grunt
-should report failures and a bunch of messages indicating what parts of the project you should
-update before you continue.
+// synchronously
+var result = companion.require('libs/third-party.js', context);
+console.log(result); // { foo : 42, thirdParty : { awesomesauce : true } }
 
-## Gruntjs
-[Gruntjs](http://gruntjs.com/) is preconfigured and ready to rock.  It will lint, concat, minify,
-run tests...  You name it.  Grunt is awesome.  The gruntfile is already setup to automate a lot of
-things for you already, including running any jasmine tests you write.  Drop your tests into
-`./test/spec/`.  Name the test files `*.spec.js`.
-
-### Boilerplate Task
-Included in the default grunt task is the `'boilerplate-check'` task.  This will ensure that you
-replace all of the default boilerplate data in the `package.json` file with your project's data.
-You can delete it once grunt starts reporting green.
+// asynchronously
+companion.require('libs/third-party.js', context, function(err, data){
+    if (!err) {
+        console.log(data); // { foo : 42, thirdParty : { awesomesauce : true } }
+    }
+});
+```
+## Details
+Many third party browser libraries expose a global variable as a namespace.  These are perfect candidates for companion.  The `companion.requre` method returns an object with properties that map to the global variables in the file.  It uses node's [VM](http://nodejs.org/api/vm.html) module to accomplish most of the magic.  As of this writing the VM module is listed as *unstable*.  See the documentation for VM to understand the limitations of companion.
